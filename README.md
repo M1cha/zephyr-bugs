@@ -1,5 +1,28 @@
 # Crash on connect with NCS 2.6.0
 
+## Checkout
+
+```bash
+mkdir tree
+cd tree
+
+virtualenv3 .venv
+. .venv/bin/activate
+pip install west
+
+west init -m https://github.com/M1cha/zephyr-bugs.git --mr ncs-2.6.0-connect-crash .
+west update
+
+pip install -r zephyr/scripts/requirements.txt
+```
+
+## Setup SDK
+
+```bash
+export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+export ZEPHYR_SDK_INSTALL_DIR=/path/to/zephyr-sdk-0.16.1
+```
+
 ## How to reproduce
 
 Build both apps:
