@@ -20,6 +20,7 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/services/bas.h>
 #include <zephyr/bluetooth/services/hrs.h>
+#include <zephyr/drivers/uart.h>
 
 #include <dk_buttons_and_leds.h>
 
@@ -47,6 +48,7 @@ static const struct bt_data ad[] = {
 	BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN)
 };
 
+static const struct device *const uart_dev = DEVICE_DT_GET(DT_CHOSEN(app_uart));
 
 static void connected(struct bt_conn *conn, uint8_t conn_err)
 {
@@ -164,6 +166,10 @@ static void notify_work_handler(struct k_work *work)
 	k_work_reschedule(k_work_delayable_from_work(work), K_MSEC(NOTIFY_INTERVAL));
 }
 
+static void uart_callback(const struct device *const uart_dev,
+                          struct uart_event *const event,
+                          void *const user_data) {}
+
 int main(void)
 {
 	uint32_t led_status = 0;
@@ -175,6 +181,20 @@ int main(void)
 	if (err) {
 		printk("LEDs init failed (err %d)\n", err);
 		return 0;
+	}
+
+
+	err = uart_callback_set(uart_dev, uart_callback, NULL);
+	if (err) {
+		printk("Failed to set UART driver callback: %d\n", err);
+		return err;
+	}
+
+	static uint8_t memory[100];
+	err = uart_rx_enable(uart_dev, memory, sizeof(memory), 100);
+	if (err) {
+		printk("Failed to enable UART RX: %d\n", err);
+		return err;
 	}
 
 	err = bt_enable(NULL);

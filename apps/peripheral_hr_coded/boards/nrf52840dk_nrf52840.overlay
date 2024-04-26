@@ -1,0 +1,10 @@
+/ {
+	chosen {
+		app,uart = &arduino_serial;
+	};
+};
+
+&arduino_serial {
+	status = "okay";
+	current-speed = <230400>;
+};
