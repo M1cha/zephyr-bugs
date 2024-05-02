@@ -112,21 +112,36 @@ static void uart_callback(const struct device *const uart_dev, struct uart_event
 {
 }
 
-int main(void)
+static void work_handler(struct k_work *work)
 {
+	ARG_UNUSED(work);
+
 	int ret;
 
 	ret = uart_callback_set(uart_dev, uart_callback, NULL);
 	if (ret) {
 		LOG_ERR("Failed to set UART driver callback: %d", ret);
-		return ret;
+		return;
 	}
 
 	static uint8_t memory[100];
 	ret = uart_rx_enable(uart_dev, memory, sizeof(memory), 100);
 	if (ret) {
 		LOG_ERR("Failed to enable UART RX: %d", ret);
-		return ret;
+		return;
+	}
+
+	LOG_INF("UART initialized");
+}
+static K_WORK_DELAYABLE_DEFINE(work, work_handler);
+
+int main(void)
+{
+	int ret;
+
+	ret = k_work_schedule(&work, K_SECONDS(1));
+	if (ret < 0) {
+		LOG_ERR("Can't schedule work: %d", ret);
 	}
 
 	ret = bt_enable(NULL);
@@ -138,6 +153,8 @@ int main(void)
 	bt_ready();
 
 	bt_conn_auth_cb_register(&auth_cb_display);
+
+	LOG_INF("BT ready");
 
 	/* Implement notification. At the moment there is no suitable way
 	 * of starting delayed work so we do it here
