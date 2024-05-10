@@ -142,9 +142,21 @@ static void notify_work_handler(struct k_work *work)
 	k_work_reschedule(k_work_delayable_from_work(work), K_MSEC(NOTIFY_INTERVAL));
 }
 
+static uint8_t my_uart_buffer[100];
+
 static void uart_callback(const struct device *const uart_dev,
-                          struct uart_event *const event,
-                          void *const user_data) {}
+			  struct uart_event *const event,
+			  void *const user_data) {
+	switch (event->type) {
+		case UART_RX_BUF_REQUEST:
+			printk("uart cb type UART_RX_BUF_REQUEST\n");
+			uart_rx_buf_rsp(uart_dev, my_uart_buffer, sizeof(my_uart_buffer));
+			break;
+		default:
+			printk("uart cb type %d\n", event->type);
+			break;
+	}
+}
 
 int main(void)
 {

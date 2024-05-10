@@ -107,9 +107,20 @@ static void hrs_notify(void)
 	bt_hrs_notify(heartrate);
 }
 
+static uint8_t my_uart_buffer[100];
+
 static void uart_callback(const struct device *const uart_dev, struct uart_event *const event,
 			  void *const user_data)
 {
+	switch (event->type) {
+	case UART_RX_BUF_REQUEST:
+		LOG_INF("uart cb type UART_RX_BUF_REQUEST");
+		uart_rx_buf_rsp(uart_dev, my_uart_buffer, sizeof(my_uart_buffer));
+		break;
+	default:
+		LOG_INF("uart cb type %d", event->type);
+		break;
+	}
 }
 
 static void work_handler(struct k_work *work)
