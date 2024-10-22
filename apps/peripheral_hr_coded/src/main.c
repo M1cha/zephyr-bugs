@@ -179,7 +179,7 @@ int main(void)
 	}
 
 	static uint8_t memory[100];
-	err = uart_rx_enable(uart_dev, memory, sizeof(memory), 100);
+	err = uart_rx_enable(uart_dev, memory, sizeof(memory), 1000);
 	if (err) {
 		printk("Failed to enable UART RX: %d\n", err);
 		return err;
